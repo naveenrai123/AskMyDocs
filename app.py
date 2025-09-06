@@ -2,27 +2,27 @@
 import streamlit as st
 import os
 import time
-import sys
 from newspaper import Article
 import google.generativeai as genai
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import chromadb
 import io
 import PyPDF2
 import uuid
-from dotenv import load_dotenv
+from urllib.parse import urlparse
 
-# -------------------------------
-# PATCH SQLITE (important for Streamlit Cloud)
-# -------------------------------
+# SQLite patch for Streamlit Cloud (uses modern SQLite >=3.35)
+import sys
 try:
-    __import__("pysqlite3")
-    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
 except ImportError:
     pass
+
+import chromadb
+from dotenv import load_dotenv
 
 # -------------------------------
 # CONFIG
@@ -33,8 +33,8 @@ API_KEY = os.getenv("GENAI_API_KEY")
 if not API_KEY:
     st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
     st.stop()
-genai.configure(api_key=API_KEY)
 
+genai.configure(api_key=API_KEY)
 EMBED_MODEL = "models/text-embedding-004"
 GEN_MODEL = "gemini-2.5-flash"
 CHUNK_SIZE = 500
@@ -74,6 +74,15 @@ collection = chroma_client.get_or_create_collection("documents")
 # -------------------------------
 # Helpers
 # -------------------------------
+def normalize_url(url: str) -> str:
+    url = url.strip()
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    if not parsed.scheme:  # missing http/https
+        url = "https://" + url
+    return url
+
 def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=overlap)
     return splitter.split_text(text)
@@ -127,10 +136,17 @@ if add_mode == "URL":
     url = st.sidebar.text_input("Enter article URL:")
     if st.sidebar.button("Add URL"):
         try:
-            article = Article(url)
-            article.download()
-            article.parse()
-            add_document(url, article.text)
+            url = normalize_url(url)
+            if not url:
+                st.sidebar.error("Please enter a valid URL.")
+            else:
+                article = Article(url)
+                article.download()
+                article.parse()
+                if not article.text.strip():
+                    st.sidebar.error("No text could be extracted from this URL.")
+                else:
+                    add_document(url, article.text)
         except Exception as e:
             st.sidebar.error(f"Failed fetching {url}: {e}")
 
