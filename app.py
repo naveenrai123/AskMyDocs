@@ -16,11 +16,13 @@ import uuid
 # -------------------------------
 # CONFIG
 # -------------------------------
-from dotenv import load_dotenv
 
 
-load_dotenv()  # loads variables from .env
-API_KEY = os.getenv("GENAI_API_KEY")
+
+API_KEY = st.secrets.get("GENAI_API_KEY")
+if not API_KEY:
+    st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
+    st.stop()
 genai.configure(api_key=API_KEY)
 if not API_KEY:
     st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
@@ -230,3 +232,4 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
+
