@@ -8,4 +8,9 @@ matplotlib==3.9.2
 chromadb==1.0.20
 PyPDF2==3.0.1
 python-dotenv==0.21.0
+lxml==5.2.1
+lxml_html_clean==0.4.2
+typing-extensions==4.14.1
+tqdm==4.67.1
+requests==2.32.5
 
