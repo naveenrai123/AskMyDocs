@@ -1,32 +1,35 @@
-# rag_chroma_app_multiuser_cleanup_duckdb.py
+# rag_chroma_app_multiuser_cleanup.py
 import streamlit as st
 import os
 import time
+import sys
 from newspaper import Article
 import google.generativeai as genai
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import sys
-
-try:
-    import pysqlite3
-    sys.modules["sqlite3"] = pysqlite3
-except ImportError:
-    pass
-
-import chromadb
-
 import chromadb
 import io
 import PyPDF2
 import uuid
+from dotenv import load_dotenv
+
+# -------------------------------
+# PATCH SQLITE (important for Streamlit Cloud)
+# -------------------------------
+try:
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
 
 # -------------------------------
 # CONFIG
 # -------------------------------
-API_KEY = st.secrets.get("GENAI_API_KEY")
+load_dotenv()  # loads variables from .env
+API_KEY = os.getenv("GENAI_API_KEY")
+
 if not API_KEY:
     st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
     st.stop()
@@ -37,19 +40,19 @@ GEN_MODEL = "gemini-2.5-flash"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 TOP_K = 3
-DB_CLEANUP_DAYS = 7  # delete old DB files
+DB_CLEANUP_DAYS = 7  # delete DB files older than 7 days
 
 # -------------------------------
 # Cleanup old user DBs
-def cleanup_old_dbs(days=7):
+# -------------------------------
+def cleanup_old_dbs(days=DB_CLEANUP_DAYS):
     now = time.time()
     for f in os.listdir("."):
-        if f.startswith("chromastore_") and f.endswith(".parquet"):
+        if f.startswith("chromastore_") and f.endswith(".db"):
             file_age_days = (now - os.path.getmtime(f)) / (24 * 3600)
             if file_age_days > days:
                 os.remove(f)
-
-
+                print(f"Deleted old DB: {f}")
 
 cleanup_old_dbs()
 
@@ -62,15 +65,10 @@ if not user_id:
     st.stop()
 
 # -------------------------------
-# ChromaDB with DuckDB + Parquet
+# SQLite database per user
 # -------------------------------
-db_path = f"chromastore_{user_id}.parquet"
-chroma_client = chromadb.PersistentClient(
-    path=db_path,
-    settings=chromadb.config.Settings(
-        chroma_db_impl="duckdb+parquet"
-    )
-)
+db_path = f"chromastore_{user_id}.db"
+chroma_client = chromadb.PersistentClient(path=db_path)
 collection = chroma_client.get_or_create_collection("documents")
 
 # -------------------------------
@@ -236,6 +234,3 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
-
-
-
