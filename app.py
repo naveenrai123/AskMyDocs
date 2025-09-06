@@ -8,6 +8,16 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import sys
+
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass
+
+import chromadb
+
 import chromadb
 import io
 import PyPDF2
@@ -226,5 +236,6 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
+
 
 
