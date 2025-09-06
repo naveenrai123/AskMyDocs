@@ -11,7 +11,7 @@ python-dotenv==0.21.0
 lxml_html_clean==0.4.2
 beautifulsoup4==4.12.2
 rich<14,>=10.14.0
-duckdb==1.26.0
+
 
 
 
