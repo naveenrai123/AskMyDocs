@@ -11,5 +11,3 @@ python-dotenv==0.21.0
 lxml[html_clean]==4.9.3
 rich<14,>=10.14.0
 
-
-
