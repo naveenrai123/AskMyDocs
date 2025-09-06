@@ -1,4 +1,4 @@
-# rag_chroma_app_multiuser_cleanup_cloud.py
+# rag_chroma_app_multiuser_cleanup_duckdb.py
 import streamlit as st
 import os
 import time
@@ -16,12 +16,10 @@ import uuid
 # -------------------------------
 # CONFIG
 # -------------------------------
-
 API_KEY = st.secrets.get("GENAI_API_KEY")
 if not API_KEY:
     st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
     st.stop()
-
 genai.configure(api_key=API_KEY)
 
 EMBED_MODEL = "models/text-embedding-004"
@@ -29,7 +27,7 @@ GEN_MODEL = "gemini-2.5-flash"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 TOP_K = 3
-DB_CLEANUP_DAYS = 7  # delete DB files older than 7 days
+DB_CLEANUP_DAYS = 7  # delete old DB files
 
 # -------------------------------
 # Cleanup old user DBs
@@ -37,7 +35,7 @@ DB_CLEANUP_DAYS = 7  # delete DB files older than 7 days
 def cleanup_old_dbs(days=DB_CLEANUP_DAYS):
     now = time.time()
     for f in os.listdir("."):
-        if f.startswith("chromastore_") and f.endswith(".db"):
+        if f.startswith("chromastore_") and f.endswith(".parquet"):
             file_age_days = (now - os.path.getmtime(f)) / (24 * 3600)
             if file_age_days > days:
                 os.remove(f)
@@ -54,10 +52,15 @@ if not user_id:
     st.stop()
 
 # -------------------------------
-# SQLite database per user
+# ChromaDB with DuckDB + Parquet
 # -------------------------------
-db_path = f"chromastore_{user_id}.db"
-chroma_client = chromadb.PersistentClient(path=db_path)
+db_path = f"chromastore_{user_id}.parquet"
+chroma_client = chromadb.PersistentClient(
+    path=db_path,
+    settings=chromadb.config.Settings(
+        chroma_db_impl="duckdb+parquet"
+    )
+)
 collection = chroma_client.get_or_create_collection("documents")
 
 # -------------------------------
