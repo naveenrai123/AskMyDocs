@@ -1,4 +1,4 @@
-# rag_chroma_app_multiuser_cleanup.py
+# rag_chroma_app_multiuser_cleanup_cloud.py
 import streamlit as st
 import os
 import time
@@ -17,16 +17,12 @@ import uuid
 # CONFIG
 # -------------------------------
 
-
-
 API_KEY = st.secrets.get("GENAI_API_KEY")
 if not API_KEY:
     st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
     st.stop()
+
 genai.configure(api_key=API_KEY)
-if not API_KEY:
-    st.error("Please set your GENAI_API_KEY in Streamlit secrets.")
-    st.stop()
 
 EMBED_MODEL = "models/text-embedding-004"
 GEN_MODEL = "gemini-2.5-flash"
@@ -63,11 +59,6 @@ if not user_id:
 db_path = f"chromastore_{user_id}.db"
 chroma_client = chromadb.PersistentClient(path=db_path)
 collection = chroma_client.get_or_create_collection("documents")
-
-# -------------------------------
-# Initialize Gemini
-# -------------------------------
-genai.configure(api_key=API_KEY)
 
 # -------------------------------
 # Helpers
@@ -232,4 +223,3 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
-
