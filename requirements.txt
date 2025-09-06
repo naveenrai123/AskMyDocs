@@ -8,9 +8,10 @@ matplotlib==3.9.2
 chromadb==1.0.20
 PyPDF2==3.0.1
 python-dotenv==0.21.0
-lxml==5.2.1
 lxml_html_clean==0.4.2
+beautifulsoup4==4.12.2
 rich<14,>=10.14.0
+
 
 
 
