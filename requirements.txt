@@ -9,9 +9,7 @@ chromadb==1.0.20
 PyPDF2==3.0.1
 python-dotenv==0.21.0
 lxml[html_clean]==4.9.3
-typing-extensions==4.14.1
-tqdm==4.67.1
-requests==2.32.5
 rich<14,>=10.14.0
+
 
 
