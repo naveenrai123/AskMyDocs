@@ -35,11 +35,12 @@ DB_CLEANUP_DAYS = 7  # delete old DB files
 def cleanup_old_dbs(days=DB_CLEANUP_DAYS):
     now = time.time()
     for f in os.listdir("."):
-        if f.startswith("chromastore_") and f.endswith(".parquet"):
+        if f.startswith("chromastore_") and f.endswith((".db", ".parquet")):
             file_age_days = (now - os.path.getmtime(f)) / (24 * 3600)
             if file_age_days > days:
                 os.remove(f)
                 print(f"Deleted old DB: {f}")
+
 
 cleanup_old_dbs()
 
@@ -226,3 +227,4 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
+
