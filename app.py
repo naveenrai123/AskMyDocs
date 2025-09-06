@@ -59,9 +59,9 @@ cleanup_old_dbs()
 # -------------------------------
 # Ask user for username/email
 # -------------------------------
-user_id = st.text_input("Enter your username/email to start:")
+user_id = st.sidebar.text_input("Enter your username/email to start:")
 if not user_id:
-    st.warning("Please enter a username/email to use the app.")
+    st.warning("Please enter a username/email in the sidebar to use the app.")
     st.stop()
 
 # -------------------------------
@@ -250,4 +250,5 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
+
 
