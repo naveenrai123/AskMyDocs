@@ -124,7 +124,7 @@ def retrieve_with_citations(query, k=TOP_K):
 # -------------------------------
 st.sidebar.header("Add Documents")
 add_mode = st.sidebar.radio("Add by", ["URL", "PDF", "Paste Text"])
-clear_docs = st.sidebar.checkbox("Clear your existing documents?", value=False)
+clear_docs = st.sidebar.checkbox("Clear your existing memory?", value=False)
 
 if clear_docs:
     all_ids = collection.get()["ids"]
@@ -174,7 +174,7 @@ tab1, tab2, tab3 = st.tabs(["🤖 Ask Questions", "📝 Summary", "☁️ WordCl
 # Tab 1: RAG Q&A
 # -------------------------------
 with tab1:
-    st.subheader("Ask Questions (RAG + Citations)")
+    st.subheader("Ask Questions")
     question = st.text_input("Type your question:")
 
     if question:
@@ -199,7 +199,7 @@ with tab1:
                 st.subheader("Answer")
                 st.write(resp.text)
 
-                st.subheader("Citations")
+                st.subheader("References")
                 for d, m in zip(docs, metas):
                     clean_text = " ".join(d.split())
                     st.markdown(f"- **{m['source']} (chunk {m['chunk_index']})**: {clean_text[:300]}...")
@@ -210,7 +210,7 @@ with tab1:
 # Tab 2: Summary
 # -------------------------------
 with tab2:
-    st.subheader("Corpus Summary")
+    st.subheader("Key Insights")
     if st.button("Generate Summary"):
         all_docs = collection.get()
         if not all_docs["documents"]:
@@ -250,5 +250,6 @@ with tab3:
             st.info("No documents added yet.")
     except Exception as e:
         st.error(f"Error generating WordCloud: {e}")
+
 
 
